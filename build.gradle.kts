@@ -1,5 +1,6 @@
 plugins {
     kotlin("jvm") version "1.9.21"
+    application
 }
 
 sourceSets {
@@ -12,4 +13,8 @@ tasks {
     wrapper {
         gradleVersion = "8.5"
     }
+}
+
+application {
+    mainClass.set("Day01Kt")
 }
