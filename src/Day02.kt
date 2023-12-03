@@ -42,13 +42,17 @@ fun main() {
     }
 
     fun part2(input: List<String>): Int {
-        return input.size
+        val games = input.map { g ->
+            val (_, right) = g.split(": ")
+            maxDrawFromGame(right).values.reduce { acc, i -> acc * i }
+        }
+        return games.sum()
     }
 
     // test if implementation meets criteria from the description, like:
     val testInput = readInput("Day02_test")
-    println(part1(testInput))
     check(part1(testInput) == 8)
+    check(part2(testInput) == 2286)
 
     val input = readInput("Day02")
     part1(input).println()
