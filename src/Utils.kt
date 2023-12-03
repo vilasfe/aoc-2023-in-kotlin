@@ -19,3 +19,33 @@ fun String.md5() = BigInteger(1, MessageDigest.getInstance("MD5").digest(toByteA
  * The cleaner shorthand for printing output.
  */
 fun Any?.println() = println(this)
+
+/**
+ * replace multiple values in a string
+ */
+fun String.replaceGreedy(mapping: Map<String, String>): String {
+    var str = this
+
+    var found = str.indexOfAny(mapping.keys)
+    while (found != -1) {
+        loop@ for((k, v) in mapping) {
+          if (str.substring(found).startsWith(k)) {
+            str = str.replaceFirst(k, v)
+            break@loop
+          }
+        }
+        found = str.indexOfAny(mapping.keys)
+    }
+
+    return str
+}
+
+/**
+ * replace multiple disjoint values in a string
+ */
+fun String.replace(mapping: Map<String, String>): String {
+    var str = this
+    mapping.forEach { str = str.replace(it.key, it.value) }
+    return str
+}
+
