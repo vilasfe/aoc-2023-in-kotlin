@@ -18,5 +18,6 @@ tasks {
 application {
     //mainClass.set("Day01Kt")
     //mainClass.set("Day02Kt")
-    mainClass.set("Day03Kt")
+    //mainClass.set("Day03Kt")
+    mainClass.set("Day04Kt")
 }
