@@ -49,3 +49,7 @@ fun String.replace(mapping: Map<String, String>): String {
     return str
 }
 
+/**
+ * Find indexes of items matching predicate
+ */
+fun <E> Iterable<E>.indexesOf(predicate: (E) -> Boolean) = mapIndexedNotNull { index, elem -> index.takeIf { predicate(elem) } }
