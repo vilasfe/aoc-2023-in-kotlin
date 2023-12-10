@@ -31,7 +31,25 @@ fun main() {
     }
 
     fun part2(input: List<String>): Int {
-        return input.size
+        val cards: List<Card> = input.map { it -> parseCard(it) }
+
+        var copies = mutableMapOf<Int, Int>()
+
+        for (c in cards) {
+            // add the original card
+            copies.put(c.index, copies.getOrDefault(c.index, 0) + 1)
+            val matches = c.winning.intersect(c.numbers).size
+            // number of matches = number of future cards to update
+            // qty of this card = qty to add to future cards
+            val toAdd = copies.getOrDefault(c.index, 1)
+            for (i in 1..matches) {
+                copies.put(i+c.index, copies.getOrDefault(i+c.index, 0) + toAdd)
+            }
+        }
+
+        val maxIndex = cards.maxWith(Comparator.comparingInt { it.index } ).index
+
+        return copies.filter { (k,_) -> k <= maxIndex }.values.fold(0) { sum, v -> sum + v }
     }
 
     // test if implementation meets criteria from the description, like:
@@ -41,5 +59,8 @@ fun main() {
 
     val input = readInput("Day04")
     part1(input).println()
+
+    part2(testInput).println()
+    check(part2(testInput) == 30)
     part2(input).println()
 }
