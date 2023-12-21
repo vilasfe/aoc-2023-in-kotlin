@@ -53,3 +53,9 @@ fun String.replace(mapping: Map<String, String>): String {
  * Find indexes of items matching predicate
  */
 fun <E> Iterable<E>.indexesOf(predicate: (E) -> Boolean) = mapIndexedNotNull { index, elem -> index.takeIf { predicate(elem) } }
+
+/**
+ * MutablePair so we can modify entries in a list
+ */
+data class MutablePair<T, U>(var first: T, var second: U)
+
