@@ -3,7 +3,6 @@ fun main() {
     fun makeYoungUniverse(input: List<String>): List<Pair<Int,Int>> {
         // Get the coordinates of all galaxies indicated by '#'
         val row_index = input.indices
-        val col_index = input[0].indices
 
         var galaxies = mutableListOf<Pair<Int,Int>>()
         for (r in row_index) {
