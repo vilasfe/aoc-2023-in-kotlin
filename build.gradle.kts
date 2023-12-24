@@ -27,5 +27,6 @@ application {
     //mainClass.set("Day09Kt")
     //mainClass.set("Day10Kt")
     //mainClass.set("Day11Kt")
-    mainClass.set("Day12Kt")
+    //mainClass.set("Day12Kt")
+    mainClass.set("Day13Kt")
 }
