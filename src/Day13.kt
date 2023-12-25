@@ -38,46 +38,76 @@ fun main() {
         return retval
     }
 
-    fun findHorizMirror(t: Terrain): Int {
-        for (r in 1..t.size-1) {
-            if (t[r] == t[r-1]) {
-                // found a potential mirror, so proceed until the limit of either top or bottom
-                val toEval = minOf(r, t.size - r)
-                var found = true
-                for (dist in 1..toEval-1) {
-                    if (t[r-dist-1] != t[r+dist]) {
-                        found = false
-                        break
-                    }
+    fun listDiff(l1: List<Char>, l2: List<Char>): Int {
+        var diff = 0
+        for (z in l1.zip(l2)) {
+            if (z.first != z.second) {
+                diff++
+            }
+        }
+        //println("Comparing $l1 vs $l2 = $diff")
+        return diff
+    }
+
+    fun findMirror(t: Terrain, smudges: Int): Int? {
+        //t.forEach { it.println() }
+        //println("---")
+        for (r in 0..t.size-2) {
+            var s = smudges
+            val toEval = (r downTo 0).zip(r+1..t.lastIndex)
+            //toEval.println()
+            var found = true
+            for (e in toEval) {
+                val d = listDiff(t[e.first], t[e.second])
+                if (d <= s) {
+                    //println("reducing ${s} by ${d}")
+                    s -= d
+                } else {
+                    found = false
+                    break
                 }
-                if (found) {
-                    return r
-                }
+            }
+            if (found && s == 0) {
+                //println("found mirror at ${r}")
+                return r+1
             }
         }
 
-        // no horizontal mirror found
-        return 0
+        // no mirror found
+        return null
     }
 
-    fun findVertMirror(t: Terrain): Int {
-        return findHorizMirror(transpose(t))
+    fun findHorizMirror(t: Terrain, smudges: Int): Int? {
+        val ret = findMirror(t, smudges)
+
+        if (ret != null) {
+            return 100 * ret
+        }
+        return null
+    }
+
+    fun findVertMirror(t: Terrain, smudges: Int): Int? {
+        return findMirror(transpose(t), smudges)
     }
 
     fun part1(input: List<String>): Int {
         val terrainList = makeTerrain(input)
 
-        return terrainList.map { findVertMirror(it) + 100 * findHorizMirror(it) }.sum()
+        return terrainList.map { findHorizMirror(it, 0) ?: findVertMirror(it, 0) ?: throw IllegalStateException("No Mirror Found") }.sum()
     }
 
     fun part2(input: List<String>): Int {
-        return input.size
+        val terrainList = makeTerrain(input)
+
+        return terrainList.map { findHorizMirror(it, 1) ?: findVertMirror(it, 1) ?: throw IllegalStateException("No Mirror Found for ${it}") }.sum()
     }
 
     // test if implementation meets criteria from the description, like:
     val testInput = readInput("Day13_test")
     println("Part 1 test result: ${part1(testInput)}")
     check(part1(testInput) == 405)
+    println("Part 2 test result: ${part2(testInput)}")
+    check(part2(testInput) == 400)
 
     val input = readInput("Day13")
     part1(input).println()
