@@ -1,5 +1,3 @@
-typealias Terrain = List<List<Char>>
-
 fun main() {
     fun makeTerrain(input: List<String>): List<Terrain> {
         var retval = mutableListOf<Terrain>()

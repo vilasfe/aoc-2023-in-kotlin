@@ -1,5 +1,3 @@
-typealias Terrain = List<List<Char>>
-
 fun main() {
 
     fun tiltNorth(t_in: Terrain): Terrain {

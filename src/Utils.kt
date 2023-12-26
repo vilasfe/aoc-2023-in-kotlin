@@ -59,3 +59,8 @@ fun <E> Iterable<E>.indexesOf(predicate: (E) -> Boolean) = mapIndexedNotNull { i
  */
 data class MutablePair<T, U>(var first: T, var second: U)
 
+/**
+ * Make a terrain grid for reuse
+ */
+typealias Terrain = List<List<Char>>
+
