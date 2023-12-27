@@ -1,8 +1,7 @@
 fun main() {
     data class Snake(var head: Pair<Int,Int>, var move: Pair<Int,Int>)
 
-    fun part1(input: List<String>): Int {
-        val mirrorMap = input.map { it.toList() }
+    fun evalSnake(snake: Snake, mirrorMap: List<List<Char>>): Int {
 
         var energyMap = mutableListOf<MutableList<Int>>()
         mirrorMap.forEach { row ->
@@ -10,10 +9,13 @@ fun main() {
         }
 
         var snakes = mutableListOf<Snake>()
-        snakes.add(Snake(Pair(0,0), Pair(0, 1)))
+        snakes.add(snake)
 
         var totalMoves = 0
-        var totalEnergized = Pair(-1, -1)
+        var totalEnergized = mutableListOf<Int>()
+
+        totalEnergized.add(0)
+
         while (snakes.isNotEmpty()) {
             //println("Snakes: ${snakes}")
             // trim snakes that crossed a boundary on last time step
@@ -77,19 +79,19 @@ fun main() {
 
             // println("${energyMap.map { it.count { it > 0 } }.sum()} == ${energyMap.map { it.count { it > 1 } }.sum()} with ${snakes.size} snakes")
 
-            if (energyMap.map { it.count { it > 0 } }.sum() ==
-                energyMap.map { it.count { it > 1 } }.sum()) {
-                  // not learning anything new, so break
-                  break
-            }
+            //if (energyMap.map { it.count { it > 0 } }.sum() ==
+            //    energyMap.map { it.count { it > 1 } }.sum()) {
+            //      // not learning anything new, so break
+            //      break
+            //}
 
-            //  Check for 3 of the same values in a row
-            if (totalEnergized.first == totalEnergized.second &&
-                totalEnergized.first == energyMap.map { it.count { it > 0 } }.sum()) {
+            //  Check for N of the same values in a row
+            val mapThisRun = energyMap.map { it.count { it > 0 } }.sum()
+            if (totalEnergized.takeLastWhile { it == mapThisRun }.size > 30) {
               break
             }
 
-            totalEnergized = Pair(totalEnergized.second, energyMap.map { it.count { it > 0 } }.sum())
+            totalEnergized.add(mapThisRun)
         }
 
         //energyMap.forEach { it.println() }
@@ -100,14 +102,34 @@ fun main() {
         return energyMap.map { it -> it.count { it > 0 } }.sum()
     }
 
+    fun part1(input: List<String>): Int {
+        val mirrorMap = input.map { it.toList() }
+
+        return evalSnake(Snake(Pair(0,0), Pair(0, 1)), mirrorMap)
+    }
+
     fun part2(input: List<String>): Int {
-        return input.size
+        val mirrorMap = input.map { it.toList() }
+
+        val topSnakes = (0..mirrorMap.lastIndex).map { Snake(Pair(0, it), Pair(1, 0)) }
+        val bottomSnakes = (0..mirrorMap.lastIndex).map { Snake(Pair(mirrorMap.lastIndex, it), Pair(-1, 0)) }
+        val leftSnakes = (0..mirrorMap[0].lastIndex).map { Snake(Pair(it, 0), Pair(0, 1)) }
+        val rightSnakes = (0..mirrorMap.lastIndex).map { Snake(Pair(mirrorMap[0].lastIndex, it), Pair(0, -1)) }
+
+        val allSnakes = listOf(topSnakes, bottomSnakes, leftSnakes, rightSnakes).flatten()
+
+        return allSnakes.map {
+            evalSnake(it, mirrorMap)
+        }.max()
+
     }
 
     // test if implementation meets criteria from the description, like:
     val testInput = readInput("Day16_test")
     println("Part 1 test: ${part1(testInput)}")
     check(part1(testInput) == 46)
+    println("Part 2 test: ${part2(testInput)}")
+    check(part2(testInput) == 51)
 
     val input = readInput("Day16")
     part1(input).println()
