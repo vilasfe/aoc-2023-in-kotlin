@@ -31,15 +31,27 @@ fun main() {
     class Conjunction(val n: String, val tgt: List<String>) : Module(n, tgt) {
         var stateOn = mutableMapOf<String, PulseType>()
 
+        // track if we have seen a high pulse at all, since the input state might reset before
+        // the cycle completes so we would never see it if we inspect below
+        var seenHigh = mutableMapOf<String, Boolean>()
+
         fun addPort(port: String) {
             stateOn[port] = PulseType.LOW
+            seenHigh[port] = false
         }
 
         override fun processPulse(p: Pulse): List<Pair<Int,Pulse>> {
             // update the memory for the input pulse
             // then if all remembered pulses are high then send low
             // else send high
+            //if (name == "ft") {
+            //    println("${name} setting stateOn[${p.prev}] to ${p.type}")
+            //}
             stateOn[p.prev] = p.type
+
+            if (p.type == PulseType.HIGH) {
+                seenHigh[p.prev] = true
+            }
 
             val toSend = if (stateOn.values.all { it == PulseType.HIGH }) PulseType.LOW else PulseType.HIGH
 
@@ -60,7 +72,11 @@ fun main() {
     }
 
     class Sink(val n: String, val tgt: List<String>) : Module(n, tgt) {
+        var lowPulseRx = 0
         override fun processPulse(p: Pulse): List<Pair<Int,Pulse>> {
+            if (p.type == PulseType.LOW) {
+                lowPulseRx++
+            }
             return emptyList()
         }
     }
@@ -97,7 +113,7 @@ fun main() {
                 v.tgtList.forEach { t ->
                     val tgt = _modules[t]
                     if (tgt != null && tgt is Conjunction) {
-                        (tgt as Conjunction).addPort(k)
+                        tgt.addPort(k)
                     }
                 }
             }
@@ -125,7 +141,7 @@ fun main() {
             // now run the machine
             while (! isQuiet()) {
                 val pulse = _messageQ.poll()!!
-                pulse.println()
+                //pulse.println()
                 _messageQ.addAll(_modules[pulse.second.next]!!.processPulse(pulse.second).map{Pair(it.first + pulse.first, it.second)})
                 if (pulse.second.type == PulseType.LOW) {
                     lowPulses++
@@ -150,26 +166,16 @@ fun main() {
         m.connectAndGates()
         m.connectSinks()
 
-        m._modules.println()
+        //m._modules.println()
 
         // push the button
         m.pushButton()
-
-        var states = mutableListOf<Int>()
 
         // solve for 1000 iterations
         val MAX_ITER = 1000
 
         var count = 1
         while (count < MAX_ITER) {
-            // keep a hashed copy of the machine state
-            val currentHash = m._modules.hashCode()
-
-            // keep pushing the button looking for a repeat
-            //if (states.contains(currentHash)) {
-            //    break
-            //}
-
             m.pushButton()
             count++
         }
@@ -179,15 +185,50 @@ fun main() {
         return m.lowPulses * m.highPulses
     }
 
-    fun part2(input: List<String>): Int {
-        return input.size
+    fun part2(input: List<String>): Long {
+
+        // build the machine
+        var m = Machine()
+
+        input.forEach {
+            val mod = it.toModule()
+            m._modules[mod.name] = mod
+        }
+
+        // make sure it is valid
+        m.connectAndGates()
+        m.connectSinks()
+
+        val sourceForRx = m._modules.values.filter { v -> v.tgtList.contains("rx") }[0].name
+            .also(::println)
+
+        var feeders = (m._modules[sourceForRx] as Conjunction).stateOn.keys.associate { tgt -> tgt to 0L }.toMutableMap()
+            .also(::println)
+
+        var count = 0L
+        while ((m._modules["rx"] as Sink).lowPulseRx == 0 && feeders.values.any { it == 0L }) {
+            //feeders.println()
+            for ((f,_) in feeders.filterValues { v -> v == 0L }) {
+                if ((m._modules[sourceForRx] as Conjunction).seenHigh[f]!!) {
+                    Pair(f, count).println()
+                    (m._modules[sourceForRx] as Conjunction).stateOn.println()
+                    (m._modules[sourceForRx] as Conjunction).seenHigh.println()
+                    feeders[f] = count
+                }
+            }
+
+            m.pushButton()
+            count++
+        }
+
+        return feeders.values.reduce(Long::lcm)
     }
 
     // test if implementation meets criteria from the description, like:
     val testInput = readInput("Day20_test")
     val testInput2 = readInput("Day20_test2")
     check(part1(testInput).also(::println) == 32000000L)
-    check(part1(testInput2) == 11687500L)
+    check(part1(testInput2).also(::println) == 11687500L)
 
     val input = readInput("Day20")
     part1(input).println()

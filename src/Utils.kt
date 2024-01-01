@@ -64,3 +64,23 @@ data class MutablePair<T, U>(var first: T, var second: U)
  */
 typealias Terrain = List<List<Char>>
 
+/**
+ * Least Common Multiple calculations
+ */
+fun Long.lcm(b: Long): Long {
+    val larger = if (this > b) this else b
+    val maxLcm = this * b
+    var lcm_ret = larger
+    while (lcm_ret <= maxLcm) {
+        if (lcm_ret % this == 0L && lcm_ret % b == 0L) {
+            return lcm_ret
+        }
+        lcm_ret += larger
+    }
+    return maxLcm
+}
+
+fun findLCMOfListOfNumbers(numbers: List<Long>): Long {
+    return numbers.reduce(Long::lcm)
+}
+
